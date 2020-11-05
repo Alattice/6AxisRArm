@@ -1,0 +1,4 @@
+*.jpg
+*.py
+*.ino
+!serialComm2.ino
