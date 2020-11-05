@@ -14,7 +14,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480);
 
 #start circle detection until circl is returned
 def circle_bound():
-	bool bound_obtained = False
+	bound_obtained = False
 	while(not bound_obtained):
 		# detect circles in the frame
 		circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
@@ -29,6 +29,7 @@ def circle_bound():
 				cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
 				# show the output image
 				cv2.imshow("output", overlay)
+			bound_obtained = True
 		else:
 			#print("nothing detected")
 			pass
@@ -46,14 +47,12 @@ if __name__ == '__main__':
 	circle_bound()
 
 	update_frame()
-	exit_check(False)
+	exit_check()
 
 
 
-def exit_check(exit):
+def exit_check():
 	if cv2.waitKey(1) & 0xFF == ord('q'):
-		break
 	# When everything done, release the capture
-	if exit:
 		cap.release()
 		cv2.destroyAllWindows()
