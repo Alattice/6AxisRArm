@@ -15,8 +15,8 @@
 */
 const int max_servos = 6; 
 const int servo_pins[max_servos] = {7,6,5,3,2,4};//j0(base),j1(arm base),j2,j3,j4,j5
-const uint8_t servo_bounds[2][max_servos]={{100,97,96,180,180,180} //lower bound
-                                          ,{90 ,0 ,180 ,0 ,0  ,0}};//upper bound
+const uint8_t servo_bounds[2][max_servos]={{45  ,97,96 ,180,20 ,180} //lower bound
+                                          ,{145 ,0 ,180,0  ,180,0  }};//upper bound
 /*
  * curr_pwm:    current position of each servo. starting from J0-J[max_servo]
  *              defined values are the initial position the robot is 
