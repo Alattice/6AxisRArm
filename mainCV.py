@@ -4,13 +4,14 @@ import usb_interface
 
 # Open the device at the ID 0
 cap = cv2.VideoCapture(0)
+port = '/dev/ttyUSB0'
 
 #Check whether user selected camera is opened successfully.
 if not (cap.isOpened()):
 	print("Could not open video device")
 
 #open usb port
-usb_interface.usb_connection(1)
+usb_interface.usb_connection(port,1)
 
 #To set the resolution
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
@@ -41,6 +42,7 @@ def circle_bound():
 		else:
 			#print("nothing detected")
 			pass
+		cv2.imshow("output", overlay)
 
 def update_frame():
 	cv2.imshow("output", overlay)
@@ -50,7 +52,7 @@ if __name__ == '__main__':
 	
 
 	circle_bound()
-
+	cv2.imshow("output", overlay)
 	update_frame()
 	exit_check()
 
@@ -61,4 +63,4 @@ def exit_check():
 	# When everything done, release the capture
 		cap.release()
 		cv2.destroyAllWindows()
-		usb_interface.usb_connection(0)
+		usb_interface.usb_connection(port,0)

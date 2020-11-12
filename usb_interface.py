@@ -2,8 +2,8 @@ print("usb interface")
 from pySerialTransfer import pySerialTransfer as txfer
 import time
 
-def usb_connection(status):
-	if status:
+def usb_connection(port,status):
+    if status==1:
         link = txfer.SerialTransfer(port, baud=115200)
 
         link.open()
