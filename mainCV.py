@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
-import usb_interface
+from pySerialTransfer import pySerialTransfer as txfer
+import time
 
 # Open the device at the ID 0
 cap = cv2.VideoCapture(0)
@@ -12,7 +13,8 @@ if not (cap.isOpened()):
 
 #open usb port
 link = txfer.SerialTransfer(port, baud=115200)
-usb_interface.usb_connection(link,1)
+link.open()
+time.sleep(2) # allow some time for the Arduino to completely reset
 
 #To set the resolution
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
@@ -23,7 +25,7 @@ def exit_check():
 	# When everything done, release the capture
 		cap.release()
 		cv2.destroyAllWindows()
-		usb_interface.usb_connection(port,0)
+		link.close()
 #start circle detection until circl is returned
 def circle_bound():
 # Capture frame-by-frame
@@ -35,27 +37,32 @@ if __name__ == '__main__':
 	bound_obtained = False
 
 	while(True):
+		while(not bound_obtained):
+			ret, frame = cap.read()
+			overlay = frame.copy();
+			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+				# detect circles in the frame
+				circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
+				# ensure at least some circles were found
+				if circles is not None:
+					# convert the (x, y) coordinates and radius of the circles to integers
+					circles = np.round(circles[0, :]).astype("int")
+					# loop over the (x, y) coordinates and radius of the circles
+					for (x, y, r) in circles:
+						# draw the circle in the output image, then draw a rectangle
+						# corresponding to the center of the circle
+						cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
+						# show the output image
+						cv2.imshow("output", overlay)
+					bound_obtained = True
+				else:
+					#print("nothing detected")
+					pass
+			cv2.imshow("output", overlay)
+			exit_check()
 		ret, frame = cap.read()
 		overlay = frame.copy();
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		while(not bound_obtained):
-			# detect circles in the frame
-			circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
-			# ensure at least some circles were found
-			if circles is not None:
-				# convert the (x, y) coordinates and radius of the circles to integers
-				circles = np.round(circles[0, :]).astype("int")
-				# loop over the (x, y) coordinates and radius of the circles
-				for (x, y, r) in circles:
-					# draw the circle in the output image, then draw a rectangle
-					# corresponding to the center of the circle
-					cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
-					# show the output image
-					cv2.imshow("output", overlay)
-				bound_obtained = True
-			else:
-				#print("nothing detected")
-				pass
 		cv2.imshow("output", overlay)
 		exit_check()
 
