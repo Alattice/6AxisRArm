@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import usb_interface
 
 # Open the device at the ID 0
 cap = cv2.VideoCapture(0)
@@ -8,12 +9,19 @@ cap = cv2.VideoCapture(0)
 if not (cap.isOpened()):
 	print("Could not open video device")
 
+#open usb port
+usb_interface.usb_connection(1)
+
 #To set the resolution
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,640);
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480);
 
 #start circle detection until circl is returned
 def circle_bound():
+# Capture frame-by-frame
+	ret, frame = cap.read()
+	overlay = frame.copy();
+	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	bound_obtained = False
 	while(not bound_obtained):
 		# detect circles in the frame
@@ -39,10 +47,7 @@ def update_frame():
 
 
 if __name__ == '__main__':
-	# Capture frame-by-frame
-	ret, frame = cap.read()
-	overlay = frame.copy();
-	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+	
 
 	circle_bound()
 
@@ -56,3 +61,4 @@ def exit_check():
 	# When everything done, release the capture
 		cap.release()
 		cv2.destroyAllWindows()
+		usb_interface.usb_connection(0)
