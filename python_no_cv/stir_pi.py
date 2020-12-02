@@ -3,7 +3,7 @@ import time
 import math
 if __name__ == '__main__':
     try:
-        link = txfer.SerialTransfer('COM13', baud=115200)
+        link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
 
         link.open()
         time.sleep(2) # allow some time for the Arduino to completely reset
@@ -11,9 +11,9 @@ if __name__ == '__main__':
         #origin:    x,y of center of the circle
         #increment: steps to increment servos
         #rad:       radius of the circle
-        origin = [50,60]
+        origin = [67,48]
         increment = 40
-        rad = 20
+        rad = 13
 
         #initial angle 
         angle = 100
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
         while True:
             j1 = origin[0]+rad*math.cos(math.radians(angle))*math.exp(angle/(-360))
-            j2 = origin[1]+rad*math.sin(math.radians(angle))
+            j2 = origin[1]+rad*math.sin(math.radians(angle))+(angle/360)*3
             j5 = 63-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
 
 
@@ -48,7 +48,6 @@ if __name__ == '__main__':
             response = [0,0,0,0,0,0]
 
             for index in range(link.bytesRead):
-
                 response[index] = int(link.rxBuff[index])
 
        
