@@ -67,7 +67,7 @@ while (True):
 
 				j1 = origin[0]+rad*math.cos(math.radians(angle))*math.exp(angle/(-360))
 				j2 = origin[1]+rad*math.sin(math.radians(angle))+(angle/360)*3
-				j5 = 63-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
+				j5 = 54-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
 
 
 				link.txBuff[0] = math.floor(j1)
@@ -82,6 +82,7 @@ while (True):
 				angle += increment
 				if(angle >= 360):
 					angle = 0
+					circle_gen = False
 
 				while not link.available():
 					if link.status < 0:
@@ -94,8 +95,8 @@ while (True):
 
 
 				print(response)
-				time.sleep(rad*0.017)
-		except KeyboardInterrupt:
+				#time.sleep(rad*0.01)
+		except KeyboardInterrupt or (cv2.waitKey(1) & 0xFF == ord('q')):
 			link.txBuff[0] = 50
 			link.txBuff[1] = 0
 			link.txBuff[2] = 0
