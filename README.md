@@ -25,8 +25,12 @@ link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
 for linux, this can be found with
 
 ```ls -l /dev/ttyUSB*```
+
 This lists all arduinos attached to the usb ports. ttyUSB is the prefix for arduino nano, other models may identify itself as ttyAc*
+
 Occasionally if the script is not run from terminal with admin permission, the following command will need to be run
+
 ```sudo chmod a+rw /dev/ttyUSB*```
+
 where * is the port being used by the arduino
 
