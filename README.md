@@ -1,4 +1,5 @@
 # 6AxisRArm
+<img src="https://github.com/Alattice/6AxisRArm/blob/main/mdpics/20201206_120231.jpg" width="600" hieght="auto">
 install guide
 For python openCV:
 open terminal and run
