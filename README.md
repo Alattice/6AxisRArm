@@ -3,7 +3,7 @@
 6AxisRArm is a library that attempts to unify control of a 6-axis robot arm with OpenCV so that a user can skip the development of the arm movement and communication of the arm (running on an Arduino Nano) with a computer (running linux & opencv via python).
 
 
-<img src="https://github.com/Alattice/6AxisRArm/blob/main/mdpics/20201206_120231.jpg" width="600" hieght="auto">
+<img src="https://github.com/Alattice/6AxisRArm/blob/main/images/20201206_120231.jpg" width="600" hieght="auto">
 
 ## Install
 
