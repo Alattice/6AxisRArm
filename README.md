@@ -1,23 +1,20 @@
 # 6AxisRArm
 <img src="https://github.com/Alattice/6AxisRArm/blob/main/mdpics/20201206_120231.jpg" width="600" hieght="auto">
-install guide
-For python openCV:
+
+## Install
+
+For python(3.x) openCV:
 open terminal and run
 
 ```sudo apt install python3-opencv```
+
+```pip install pySerialTransfer```
 
 this will install all the python and opencv needed
 
 For Arduino:
 
 -install the SerialTransfer.h library by PowerBroker through the llibrary manager or github https://github.com/PowerBroker2/SerialTransfer
-
-For Python:
-
--install Python 3.x
--in terminal, run
-
-```pip install pySerialTransfer```
 
 The serialComm2 code will work without the openCV, simply accompany it with example codes in python_no_cv/
 
