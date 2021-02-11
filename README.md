@@ -14,7 +14,7 @@ open terminal and run
 
 ```sudo apt install python3-pip```
 
-```pip install pySerialTransfer```
+```pip3 install pySerialTransfer```
 
 this will install all the python and opencv needed
 
