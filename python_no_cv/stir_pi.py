@@ -1,9 +1,17 @@
 from pySerialTransfer import pySerialTransfer as txfer
+import serial.tools.list_ports
 import time
 import math
 if __name__ == '__main__':
     try:
-        link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
+        ports = list(serial.tools.list_ports.comports())
+        port = "";
+        for p in ports:
+            print(p.description)
+            if "Arduino" in p.description or "CH340" in p.description:
+                print("Arduino detected on ", p.device)
+                port = p.device
+        link = txfer.SerialTransfer(port, baud=115200)
 
         link.open()
         time.sleep(2) # allow some time for the Arduino to completely reset
@@ -11,7 +19,7 @@ if __name__ == '__main__':
         #origin:    x,y of center of the circle
         #increment: steps to increment servos
         #rad:       radius of the circle
-        origin = [67,48]
+        origin = [50,50]
         increment = 40
         rad = 13
 
@@ -58,7 +66,7 @@ if __name__ == '__main__':
         #return to initial position
         link.txBuff[0] = 50
         link.txBuff[1] = 0
-        link.txBuff[2] = 0
+        link.txBuff[2] = 10
         for a in range(3,5):
             link.txBuff[a] = 50
         link.send(6)

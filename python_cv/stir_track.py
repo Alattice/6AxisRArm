@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from pySerialTransfer import pySerialTransfer as txfer
+import serial.tools.list_ports
 import time
 import math
 
@@ -17,7 +18,15 @@ height = 480
 #To set the resolution
 cap.set(cv2.CAP_PROP_FRAME_WIDTH,width);
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT,height);
-link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
+#find port where arduino is located
+ports = list(serial.tools.list_ports.comports())
+port = "";
+for p in ports:
+        print(p.description)
+        if "Arduino" in p.description or "CH340" in p.description:
+                print("Arduino detected on ", p.device)
+                port = p.device
+                link = txfer.SerialTransfer(port, baud=115200)
 link.open()
 time.sleep(2) # allow some
 for a in range(6):
