@@ -38,3 +38,5 @@ Occasionally if the script is not run from terminal with admin permission, the f
 
 where * is the port being used by the arduino
 
+[![IMAGE ALT TEXT](http://img.youtube.com/vi/cXKHj_ff0_4/0.jpg)](https://www.youtube.com/watch?v=cXKHj_ff0_4 "Robot stir test")
+
