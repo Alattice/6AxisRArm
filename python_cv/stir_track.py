@@ -4,42 +4,82 @@ from pySerialTransfer import pySerialTransfer as txfer
 import serial.tools.list_ports
 import time
 import math
+import threading
+import queue
+import traceback
+import sys
 
-#import usb_interface
-# Open the device at the ID 0
-cap = cv2.VideoCapture(0)
 
-#Check whether user selected camera is opened successfully.
-if not (cap.isOpened()):
-	print("Could not open video device")
+class cv_module(threading.Thread):
+	def __init__(self):
+		threading.Thread.__init__(self)
+		
+		#cv
+		self.vid_cap_device = 0 #default webcam on linux
+		#self.videoStream
+		self.window_W = 640
+		self.window_H = 480
+		self.cam_stream = None
 
-width = 640
-height = 480
-#To set the resolution
-cap.set(cv2.CAP_PROP_FRAME_WIDTH,width);
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT,height);
-#find port where arduino is located
-ports = list(serial.tools.list_ports.comports())
-port = "";
-for p in ports:
-        print(p.description)
-        if "Arduino" in p.description or "CH340" in p.description:
-                print("Arduino detected on ", p.device)
-                port = p.device
-                link = txfer.SerialTransfer(port, baud=115200)
-link.open()
-time.sleep(2) # allow some
-for a in range(6):
-	link.txBuff[a] = 50
-	link.txBuff[2] = 20
+		#arduino link
+		self.link = None #usb link obj
 
-circle_gen = False
+		self.user_params()
+		self.init_window()
+		self.init_robot_link()
+			
+
+	def user_params(self): #cmd args from user
+		num_args = len(sys.argv)
+		if num_args == 1: #no param given, assume video0
+			#self.vid_cap_device = 0
+			print("No user input, assuming {}".format(self.vid_cap_device))
+		else:
+			self.vid_cap_device = int(sys.argv[1])
+			print("Using {} as video input".format(self.vid_cap_device))
+
+
+	def init_window(self):
+		try:
+			# Open the device at the ID 0
+			self.cam_stream = cv2.VideoCapture(self.vid_cap_device)
+			
+
+			#Check whether user selected camera is opened successfully.
+			if not (self.cam_stream.isOpened()):
+				print("Could not open video device")
+				return 1
+
+			#set window resolution
+			self.cam_stream.set(cv2.CAP_PROP_FRAME_WIDTH,self.window_W);
+			self.cam_stream.set(cv2.CAP_PROP_FRAME_HEIGHT,self.window_H);
+
+		except Exception as err:
+			print("error relating to video device occured: {}".format())
+
+	def init_robot_link(self): #establish use link with robot arm
+		try:
+			self.link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
+			self.link.open()
+			time.sleep(2) # allow some
+			for a in range(6):
+				self.link.txBuff[a] = 50 #set default positions
+				self.link.txBuff[2] = 20 #set default position joint 2
+			return 0
+		except Exception as err:
+			print("Failed to connect to ttyUSB0")
+			return 1
+
+#============================== main routine ================================
+session = cv_module()
+
+circle_gen = False #flag for if circle is detected
 xyr = [0,0,0]
 cvxyr = [0,0,0]
 angle = 100
 
-while (True):
-	ret, frame = cap.read()
+while (True): #main routine
+	ret, frame = session.cam_stream.read()
 	overlay = frame.copy();
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	if not circle_gen:
@@ -54,8 +94,8 @@ while (True):
 			# corresponding to the center of the circle
 				cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
 				if (r > 0) and (x > 0) and (y > 0):
-					xyr[0] = int(100-100*x/width)
-					xyr[1] = int(100-100*y/height)
+					xyr[0] = int(100-100*x/session.window_W)
+					xyr[1] = int(100-100*y/session.window_H)
 					xyr[2] = int(100*r/480)
 					cvxyr = x,y,r
 					origin = [xyr[0],xyr[1]]
@@ -66,7 +106,7 @@ while (True):
 	#stir if circlei
 	if circle_gen:
 		try:
-				ret, frame = cap.read()
+				ret, frame = session.cam_stream.read()
 				overlay = frame.copy();
 				#gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 				#screen_stat = str("x: {} y: {} r: {}".format(xyr[0],xyr[1],xyr[2]))
@@ -79,56 +119,56 @@ while (True):
 				j5 = 54-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
 
 
-				link.txBuff[0] = math.floor(j1)
-				link.txBuff[1] = math.floor(j2)
-				link.txBuff[4] = math.floor(j5)
+				session.link.txBuff[0] = math.floor(j1)
+				session.link.txBuff[1] = math.floor(j2)
+				session.link.txBuff[4] = math.floor(j5)
 
-				print(link.txBuff[0],link.txBuff[1],link.txBuff[4])
+				print(session.link.txBuff[0],session.link.txBuff[1],session.link.txBuff[4])
 
 
-				link.send(6)
+				session.link.send(6)
 
 				angle += increment
 				if(angle >= 360):
 					angle = 0
 					circle_gen = False
 
-				while not link.available():
-					if link.status < 0:
-						print('ERROR: {}'.format(link.status))
+				while not session.link.available():
+					if session.link.status < 0:
+						print('ERROR: {}'.format(session.link.status))
 
 				response = [0,0,0,0,0,0]
 
-				for index in range(link.bytesRead):
-					response[index] = int(link.rxBuff[index])
+				for index in range(session.link.bytesRead):
+					response[index] = int(session.link.rxBuff[index])
 
 
 				print(response)
 				#time.sleep(rad*0.01)
 		except KeyboardInterrupt or (cv2.waitKey(1) & 0xFF == ord('q')):
-			link.txBuff[0] = 50
-			link.txBuff[1] = 0
-			link.txBuff[2] = 0
+			session.link.txBuff[0] = 50
+			session.link.txBuff[1] = 0
+			session.link.txBuff[2] = 0
 			for a in range(3,5):
-				link.txBuff[a] = 50
-			link.send(6)
+				session.link.txBuff[a] = 50
+			session.link.send(6)
 			time.sleep(1)
-			link.close()
-			cap.release()
+			session.link.close()
+			session.cam_stream.release()
 			cv2.destroyAllWindows()
 
 	screen_stat = str("x: {} y: {} r: {}".format(xyr[0],xyr[1],xyr[2]))
 	cv2.putText(overlay,screen_stat,(5,15),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,0,255),2,cv2.LINE_AA)
 	cv2.imshow("output", overlay)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
-		link.txBuff[0] = 50
-		link.txBuff[1] = 0
-		link.txBuff[2] = 0
+		session.link.txBuff[0] = 50
+		session.link.txBuff[1] = 0
+		session.link.txBuff[2] = 0
 		for a in range(3,5):
-			link.txBuff[a] = 50
-		link.send(6)
+			session.link.txBuff[a] = 50
+		session.link.send(6)
 		time.sleep(1)
-		link.close()
-		cap.release()
+		session.link.close()
+		session.cam_stream.release()
 		cv2.destroyAllWindows()
 		break

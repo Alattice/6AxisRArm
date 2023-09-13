@@ -18,7 +18,6 @@ while(True):
 	ret, frame = cap.read()
 	overlay = frame.copy();
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
 # detect circles in the frame
 	circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
 # Display the resulting frame
@@ -34,12 +33,13 @@ while(True):
 			#cv2.rectangle(overlay, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 			#cv2.rectangle(overlay, (x-r,y-r) , (x+r,y+r) , (36,48,201), 5)
 		# show the output image
-			cv2.imshow("output", overlay)
+		screen_stat = str("x: {} y: {} r: {}".format(int(100-100*x/640),int(100-100*y/480),int(100*r/480)))
+		cv2.putText(overlay,screen_stat,(5,15),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(255,0,0),2,cv2.LINE_AA)
+		cv2.imshow("output", overlay)
 
 	else:
 		#print("nothing detected")
 		pass
-
 	cv2.imshow("output", overlay)
 #Waits for a user input to quit the application
 

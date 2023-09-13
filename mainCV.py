@@ -42,18 +42,18 @@ if __name__ == '__main__':
 			overlay = frame.copy();
 			gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 				# detect circles in the frame
-				circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
+			circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 100)
 				# ensure at least some circles were found
-				if circles is not None:
+			if circles is not None:
 					# convert the (x, y) coordinates and radius of the circles to integers
-					circles = np.round(circles[0, :]).astype("int")
+				circles = np.round(circles[0, :]).astype("int")
 					# loop over the (x, y) coordinates and radius of the circles
-					for (x, y, r) in circles:
+				for (x, y, r) in circles:
 						# draw the circle in the output image, then draw a rectangle
 						# corresponding to the center of the circle
-						cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
+					cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
 						# show the output image
-						cv2.imshow("output", overlay)
+					cv2.imshow("output", overlay)
 					bound_obtained = True
 				else:
 					#print("nothing detected")

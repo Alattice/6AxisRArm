@@ -19,7 +19,8 @@ if __name__ == '__main__':
         #origin:    x,y of center of the circle
         #increment: steps to increment servos
         #rad:       radius of the circle
-        origin = [50,50]
+
+        origin = [55,72]
         increment = 40
         rad = 13
 
