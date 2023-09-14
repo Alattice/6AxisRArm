@@ -1,13 +1,27 @@
+##################################
+# main file for robot arm stirring
+# takes input of webcam port
+# uses webcam to monitor for a circle (pot) and identifies
+# circumference path. Coordinates are sent to robot arm to 
+# follow & stir pot when spoon is attached
+#
+#
+# built on python 3.6.9
+# dependencies: numpy, pySerialTransfer(python & arduino)
+###################################
+
 import numpy as np
 import cv2
-from pySerialTransfer import pySerialTransfer as txfer
-import serial.tools.list_ports
+#from pySerialTransfer import pySerialTransfer as txfer
+#from serial.tools import list_ports
 import time
 import math
 import threading
 import queue
 import traceback
 import sys
+
+from usb_linker import usb_linker as usb
 
 
 class cv_module(threading.Thread):
@@ -22,11 +36,14 @@ class cv_module(threading.Thread):
 		self.cam_stream = None
 
 		#arduino link
-		self.link = None #usb link obj
+		#self.link = None #usb link obj
 
 		self.user_params()
 		self.init_window()
-		self.init_robot_link()
+		#self.init_robot_link()
+
+		#start window thread
+		#self.window = window_process.window_handler()
 			
 
 	def user_params(self): #cmd args from user
@@ -57,21 +74,30 @@ class cv_module(threading.Thread):
 		except Exception as err:
 			print("error relating to video device occured: {}".format())
 
-	def init_robot_link(self): #establish use link with robot arm
-		try:
-			self.link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
-			self.link.open()
-			time.sleep(2) # allow some
-			for a in range(6):
-				self.link.txBuff[a] = 50 #set default positions
-				self.link.txBuff[2] = 20 #set default position joint 2
-			return 0
-		except Exception as err:
-			print("Failed to connect to ttyUSB0")
-			return 1
+	def window_handler(self):
+		pass
+
+	# def init_robot_link(self): #establish use link with robot arm
+	# 	try:
+	# 		self.link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
+	# 		self.link.open()
+	# 		time.sleep(2) # allow some
+	# 		for a in range(6):
+	# 			self.link.txBuff[a] = 50 #set default positions
+	# 			self.link.txBuff[2] = 20 #set default position joint 2
+	# 		return 0
+	# 	except Exception as err:
+	# 		print("Failed to connect to ttyUSB0")
+	# 		return 1
 
 #============================== main routine ================================
+robot_arm = usb()
 session = cv_module()
+
+#set default robot joint pos
+for a in range(6):
+	robot_arm.usb_link.txBuff[a] = 50 #set default positions
+	robot_arm.usb_link.txBuff[2] = 20 #set default position joint 2
 
 circle_gen = False #flag for if circle is detected
 xyr = [0,0,0]
@@ -119,41 +145,34 @@ while (True): #main routine
 				j5 = 54-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
 
 
-				session.link.txBuff[0] = math.floor(j1)
-				session.link.txBuff[1] = math.floor(j2)
-				session.link.txBuff[4] = math.floor(j5)
+				robot_arm.usb_link.txBuff[0] = math.floor(j1)
+				robot_arm.usb_link.txBuff[1] = math.floor(j2)
+				robot_arm.usb_link.txBuff[4] = math.floor(j5)
 
-				print(session.link.txBuff[0],session.link.txBuff[1],session.link.txBuff[4])
+				print(robot_arm.usb_link.txBuff[0],robot_arm.usb_link.txBuff[1],robot_arm.usb_link.txBuff[4])
 
 
-				session.link.send(6)
+				robot_arm.usb_link.send(6)
 
 				angle += increment
 				if(angle >= 360):
 					angle = 0
 					circle_gen = False
 
-				while not session.link.available():
-					if session.link.status < 0:
-						print('ERROR: {}'.format(session.link.status))
+				while not robot_arm.usb_link.available():
+					if robot_arm.usb_link.status < 0:
+						print('ERROR: {}'.format(robot_arm.usb_link.status))
 
 				response = [0,0,0,0,0,0]
 
-				for index in range(session.link.bytesRead):
-					response[index] = int(session.link.rxBuff[index])
+				for index in range(robot_arm.usb_link.bytesRead):
+					response[index] = int(robot_arm.usb_link.rxBuff[index])
 
 
 				print(response)
 				#time.sleep(rad*0.01)
 		except KeyboardInterrupt or (cv2.waitKey(1) & 0xFF == ord('q')):
-			session.link.txBuff[0] = 50
-			session.link.txBuff[1] = 0
-			session.link.txBuff[2] = 0
-			for a in range(3,5):
-				session.link.txBuff[a] = 50
-			session.link.send(6)
-			time.sleep(1)
-			session.link.close()
+			robot_arm.close()
 			session.cam_stream.release()
 			cv2.destroyAllWindows()
 
@@ -161,14 +180,7 @@ while (True): #main routine
 	cv2.putText(overlay,screen_stat,(5,15),cv2.FONT_HERSHEY_SIMPLEX, 0.5,(0,0,255),2,cv2.LINE_AA)
 	cv2.imshow("output", overlay)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
-		session.link.txBuff[0] = 50
-		session.link.txBuff[1] = 0
-		session.link.txBuff[2] = 0
-		for a in range(3,5):
-			session.link.txBuff[a] = 50
-		session.link.send(6)
-		time.sleep(1)
-		session.link.close()
+		robot_arm.close()
 		session.cam_stream.release()
 		cv2.destroyAllWindows()
 		break
