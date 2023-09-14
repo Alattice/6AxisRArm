@@ -1,17 +1,25 @@
 from pySerialTransfer import pySerialTransfer as txfer
-import serial.tools.list_ports
+from serial.tools import list_ports
 import time
 import math
 if __name__ == '__main__':
     try:
-        ports = list(serial.tools.list_ports.comports())
-        port = "";
-        for p in ports:
-            print(p.description)
-            if "Arduino" in p.description or "CH340" in p.description:
-                print("Arduino detected on ", p.device)
-                port = p.device
-        link = txfer.SerialTransfer(port, baud=115200)
+        ports = list(list_ports.comports())
+        #print(list_ports.grep("ttyUSB0"))
+        device_port = None;
+        for port in ports:
+            print(port)
+            print(port.device)
+            print(port.hwid)
+            print(port.description)
+            if "Arduino" in port.description or "CH340" in port.description:
+                print("Arduino detected on ", port.device)
+                device_port = port.device
+            elif 'ttyUSB0' in port.device:
+                device_port = port.device
+                print("no specific arduino detected but found {} on {}".format(port.description,port.device))
+
+        link = txfer.SerialTransfer(device_port, baud=115200)
 
         link.open()
         time.sleep(2) # allow some time for the Arduino to completely reset
