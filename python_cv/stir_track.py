@@ -21,7 +21,7 @@ import queue
 import traceback
 import sys
 
-from usb_linker import usb_linker as usb
+import usb_linker as usb
 
 
 class cv_module(threading.Thread):
@@ -35,12 +35,8 @@ class cv_module(threading.Thread):
 		self.window_H = 480
 		self.cam_stream = None
 
-		#arduino link
-		#self.link = None #usb link obj
-
 		self.user_params()
 		self.init_window()
-		#self.init_robot_link()
 
 		#start window thread
 		#self.window = window_process.window_handler()
@@ -76,19 +72,6 @@ class cv_module(threading.Thread):
 
 	def window_handler(self):
 		pass
-
-	# def init_robot_link(self): #establish use link with robot arm
-	# 	try:
-	# 		self.link = txfer.SerialTransfer('/dev/ttyUSB0', baud=115200)
-	# 		self.link.open()
-	# 		time.sleep(2) # allow some
-	# 		for a in range(6):
-	# 			self.link.txBuff[a] = 50 #set default positions
-	# 			self.link.txBuff[2] = 20 #set default position joint 2
-	# 		return 0
-	# 	except Exception as err:
-	# 		print("Failed to connect to ttyUSB0")
-	# 		return 1
 
 #============================== main routine ================================
 robot_arm = usb()
