@@ -22,7 +22,7 @@ import traceback
 import sys
 
 import usb_linker as usb
-import window_process as view
+#import window_process as view
 
 class window_process(threading.Thread):
 	def __init__(self, frame_data):
