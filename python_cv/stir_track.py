@@ -28,11 +28,11 @@ class window_process(threading.Thread):
 	def __init__(self,ready,vid_dev):
 		self.window_W = 640
 		self.window_H = 480
-		self.cam_stream = cv2.VideoCapture(vid_dev)
+		self.cam_stream = None
 		self.overlay = None
-		threading.Thread.__init__(self)
 		self.start(vid_dev)
 		time.sleep(1)
+		threading.Thread.__init__(self)
 		self.window_proc = threading.Thread(target=self.update)
 		self.window_proc.name = 'window_update_manager'
 		self.window_proc.start()
@@ -43,7 +43,8 @@ class window_process(threading.Thread):
 	def start(self, vid_cap_device):
 		try:
 			# Open the device at the ID 0
-			#self.cam_stream = cv2.VideoCapture(vid_cap_device)
+			self.cam_stream = cv2.VideoCapture(vid_cap_device)
+			
 			
 
 			#Check whether user selected camera is opened successfully.
@@ -63,13 +64,17 @@ class window_process(threading.Thread):
 		if frame is not None:
 			self.overlay = frame.copy();
 			time.sleep(0.05)
-			cv2.imshow("output", self.overlay)
+			cv2.imshow("output", frame)
+			#cv2.imshow("output", self.overlay)
 		else:
 			time.sleep(1)
 		pass
 
 	def close(self):
 		self.window_proc.join()
+		pass
+
+	def __exit__(self):
 		pass
 
 #------------------------------window end-----------------
@@ -104,6 +109,9 @@ class cv_module(threading.Thread):
 			self.vid_cap_device = int(sys.argv[1])
 			print("Using {} as video input".format(self.vid_cap_device))
 
+	def return_error(self,err_str,exception):
+		print("program could not start: {}\n"\
+		"error returned: {}".format(err_str,exception))
 
 	# def init_window(self):
 	# 	try:
