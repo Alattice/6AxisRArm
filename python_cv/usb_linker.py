@@ -27,7 +27,7 @@ class usb_linker():
 				if "Arduino" in port.description or "CH340" in port.description:
 					print("Arduino detected on ", port.device)
 					device_port = port.device
-				elif 'ttyUSB0' in port.device:
+				elif 'ttyUSB' in port.device:
 					device_port = port.device
 					print("no specific arduino detected but found {} on {}".format(port.description,port.device))
 
