@@ -54,7 +54,7 @@ class cv_module(threading.Thread):
 
 	def init_window(self):
 		try:
-			# Open the device at the ID 0
+			# Open the camera device (default 0) 0
 			self.cam_stream = cv2.VideoCapture(self.vid_cap_device)
 			
 
@@ -70,8 +70,6 @@ class cv_module(threading.Thread):
 		except Exception as err:
 			print("error relating to video device occured: {}".format())
 
-	def window_handler(self):
-		pass
 
 #============================== main routine ================================
 robot_arm = usb()
@@ -102,7 +100,7 @@ while (True): #main routine
 			# draw the circle in the output image, then draw a rectangle
 			# corresponding to the center of the circle
 				cv2.circle(overlay, (x, y), r, (0, 255, 0), 4)
-				if (r > 0) and (x > 0) and (y > 0):
+				if (r > 0) and (x > 0) and (y > 0): #if circle exists, draw circle
 					xyr[0] = int(100-100*x/session.window_W)
 					xyr[1] = int(100-100*y/session.window_H)
 					xyr[2] = int(100*r/480)
@@ -123,11 +121,12 @@ while (True): #main routine
 				cv2.circle(overlay, (cvxyr[0], cvxyr[1]), cvxyr[2], (0, 255, 0), 4)
 				cv2.imshow("output", overlay)
 
+				# move arm joints to position
 				j1 = origin[0]+rad*math.cos(math.radians(angle))*math.exp(angle/(-360))
 				j2 = origin[1]+rad*math.sin(math.radians(angle))+(angle/360)*3
 				j5 = 54-7*math.sin(math.radians(angle))*math.exp(angle/(-360))
 
-
+				#send servo pos to arm
 				robot_arm.usb_link.txBuff[0] = math.floor(j1)
 				robot_arm.usb_link.txBuff[1] = math.floor(j2)
 				robot_arm.usb_link.txBuff[4] = math.floor(j5)
@@ -137,15 +136,13 @@ while (True): #main routine
 
 				robot_arm.usb_link.send(6)
 
+				#reset arm to 0 deg (360==0)
 				angle += increment
 				if(angle >= 360):
 					angle = 0
 					circle_gen = False
 
-				while not robot_arm.usb_link.available():
-					if robot_arm.usb_link.status < 0:
-						print('ERROR: {}'.format(robot_arm.usb_link.status))
-
+				robot_arm.watchdog()
 				response = [0,0,0,0,0,0]
 
 				for index in range(robot_arm.usb_link.bytesRead):
