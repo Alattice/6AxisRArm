@@ -40,7 +40,10 @@ class usb_linker():
 			return 1
 
 	def watchdog(self): # polls ports to ensure arduino is still connected
-		pass
+		#freeze program until usb returns
+		while not self.usb_link.available():
+			print("ERROR: connection to robot arm lost: {}".format(robot_arm.usb_link.status))
+			time.sleep(2)
 
 	def close(self):
 		self.usb_link.txBuff[0] = 50
